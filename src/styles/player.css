@@ -1,0 +1,216 @@
+.player {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg);
+  overflow: hidden;
+  animation: fadeInPage 0.4s ease-out forwards;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+@keyframes fadeInPage {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Header */
+.player__header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 3rem 1.25rem 0;
+}
+
+.player__back {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+  padding: 0.5rem;
+  margin: -0.5rem;
+}
+
+.player__back:hover {
+  color: var(--text-primary);
+}
+
+.player__back svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Main content */
+.player__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 2rem;
+  gap: 0;
+}
+
+/* Icon area */
+.player__icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.player__icon-glow {
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 168, 130, 0.18) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.player__icon-glow--active {
+  opacity: 1;
+  animation: iconPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%       { transform: scale(1.12); opacity: 1; }
+}
+
+.player__icon svg {
+  width: 80px;
+  height: 80px;
+  stroke: var(--accent);
+  fill: none;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Track info */
+.player__track-name {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(1.8rem, 7vw, 2.8rem);
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+
+.player__track-hz {
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 2.5rem;
+}
+
+/* Duration toggles */
+.player__duration-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2.5rem;
+  border: 1px solid rgba(196, 168, 130, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.player__duration-btn {
+  flex: 1;
+  padding: 0.6rem 1.6rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: transparent;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.player__duration-btn + .player__duration-btn {
+  border-left: 1px solid rgba(196, 168, 130, 0.2);
+}
+
+.player__duration-btn--active {
+  background: rgba(196, 168, 130, 0.12);
+  color: var(--accent);
+}
+
+/* Timer */
+.player__timer {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(3rem, 12vw, 5rem);
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  margin-bottom: 2.5rem;
+  min-width: 6rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.player__timer--dim {
+  color: var(--text-secondary);
+  font-size: clamp(1.6rem, 6vw, 2.4rem);
+}
+
+/* Play/Pause button */
+.player__play-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(196, 168, 130, 0.5) !important;
+  background: rgba(196, 168, 130, 0.06) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.player__play-btn:hover {
+  border-color: rgba(196, 168, 130, 0.9) !important;
+  background: rgba(196, 168, 130, 0.12) !important;
+  box-shadow: 0 0 24px rgba(196, 168, 130, 0.2);
+}
+
+.player__play-btn:active {
+  transform: scale(0.94);
+}
+
+.player__play-btn svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--accent);
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Play icon nudge */
+.player__play-btn .play-icon {
+  transform: translateX(2px);
+}
+
+/* Status label */
+.player__status {
+  margin-top: 1.2rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  min-height: 1em;
+}
