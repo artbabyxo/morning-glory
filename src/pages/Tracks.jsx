@@ -41,7 +41,7 @@ export default function Tracks() {
     <div className="tracks">
       <header className="tracks__header">
         <h1 className="tracks__title">Morning Glory</h1>
-        <p className="tracks__subtitle">choose your frequency</p>
+        <p className="tracks__subtitle">subliminal reprogramming while you sleep</p>
       </header>
 
       <div className="tracks__grid">

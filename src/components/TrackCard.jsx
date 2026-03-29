@@ -36,7 +36,6 @@ export default function TrackCard({ track }) {
       </div>
 
       <div className="track-card__name">{track.name}</div>
-      <div className="track-card__hz">{track.hz}</div>
     </div>
   );
 }
