@@ -8,7 +8,7 @@ const TRACK_DATA = {
     name: 'Abundance',
     hz: '432 Hz',
     icon: <DollarIcon />,
-    audioSrc: '/audio/track-3-abundance.m4a',
+    audioSrc: '/audio/track-3-abundance.mp3',
   },
 };
 
@@ -17,20 +17,20 @@ const DURATIONS = {
   30: 30 * 60,
 };
 
+const LOOP_FADE_SECS = 3;
+
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-// Play icon SVG
 const PlayIcon = () => (
   <svg viewBox="0 0 24 24" className="play-icon">
     <polygon points="6,4 20,12 6,20" />
   </svg>
 );
 
-// Pause icon SVG
 const PauseIcon = () => (
   <svg viewBox="0 0 24 24">
     <line x1="7" y1="4" x2="7" y2="20" />
@@ -38,7 +38,6 @@ const PauseIcon = () => (
   </svg>
 );
 
-// Back chevron
 const BackIcon = () => (
   <svg viewBox="0 0 24 24">
     <polyline points="15,18 9,12 15,6" />
@@ -50,7 +49,7 @@ export default function Player() {
   const navigate = useNavigate();
   const track = TRACK_DATA[trackId];
 
-  const [selectedDuration, setSelectedDuration] = useState(30); // minutes
+  const [selectedDuration, setSelectedDuration] = useState(30);
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeLeft, setTimeLeft] = useState(DURATIONS[30]);
   const [isFading, setIsFading] = useState(false);
@@ -58,23 +57,86 @@ export default function Player() {
   const audioRef = useRef(null);
   const timerRef = useRef(null);
   const fadeRef = useRef(null);
+  const loopFadeRef = useRef(null);
+
+  // Refs to avoid stale closures in audio event listeners
+  const isPlayingRef = useRef(false);
+  const isFadingRef = useRef(false);
+  const loopFadingRef = useRef(false);
+
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+  useEffect(() => { isFadingRef.current = isFading; }, [isFading]);
+
+  const fadeInAudio = useCallback((audio) => {
+    clearInterval(loopFadeRef.current);
+    loopFadingRef.current = true;
+    audio.volume = 0;
+    const steps = 30;
+    const interval = (LOOP_FADE_SECS * 1000) / steps;
+    const step = 1 / steps;
+    loopFadeRef.current = setInterval(() => {
+      if (audio.volume < 1 - step) {
+        audio.volume = Math.min(1, audio.volume + step);
+      } else {
+        audio.volume = 1;
+        loopFadingRef.current = false;
+        clearInterval(loopFadeRef.current);
+      }
+    }, interval);
+  }, []);
 
   // Init audio element
   useEffect(() => {
     const audio = new Audio(track.audioSrc);
-    audio.loop = true;
+    audio.loop = false;
     audio.preload = 'auto';
+
+    const handleTimeUpdate = () => {
+      if (!isPlayingRef.current || isFadingRef.current || loopFadingRef.current) return;
+      if (!audio.duration) return;
+      const timeToEnd = audio.duration - audio.currentTime;
+      if (timeToEnd <= LOOP_FADE_SECS && timeToEnd > 0) {
+        loopFadingRef.current = true;
+        clearInterval(loopFadeRef.current);
+        const steps = 20;
+        const interval = (timeToEnd * 1000) / steps;
+        const startVol = audio.volume;
+        const step = startVol / steps;
+        loopFadeRef.current = setInterval(() => {
+          if (audio.volume > step) {
+            audio.volume = Math.max(0, audio.volume - step);
+          } else {
+            audio.volume = 0;
+            clearInterval(loopFadeRef.current);
+          }
+        }, interval);
+      }
+    };
+
+    const handleEnded = () => {
+      if (isFadingRef.current) return; // session ending, don't restart
+      clearInterval(loopFadeRef.current);
+      loopFadingRef.current = false;
+      audio.currentTime = 0;
+      audio.play().catch(console.error);
+      fadeInAudio(audio);
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('ended', handleEnded);
     audioRef.current = audio;
 
     return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('ended', handleEnded);
       audio.pause();
       audio.src = '';
       clearInterval(timerRef.current);
       clearInterval(fadeRef.current);
+      clearInterval(loopFadeRef.current);
     };
-  }, [track.audioSrc]);
+  }, [track.audioSrc, fadeInAudio]);
 
-  // When duration selection changes while not playing, reset timer
   useEffect(() => {
     if (!isPlaying) {
       setTimeLeft(DURATIONS[selectedDuration]);
@@ -85,6 +147,8 @@ export default function Player() {
     const audio = audioRef.current;
     clearInterval(timerRef.current);
     clearInterval(fadeRef.current);
+    clearInterval(loopFadeRef.current);
+    loopFadingRef.current = false;
     if (audio) {
       audio.pause();
       audio.currentTime = 0;
@@ -98,13 +162,18 @@ export default function Player() {
   const startFadeOut = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    isFadingRef.current = true;
     setIsFading(true);
     clearInterval(timerRef.current);
+    clearInterval(loopFadeRef.current);
+    loopFadingRef.current = false;
 
-    const fadeDuration = 10000; // 10s
+    const fadeDuration = 10000;
     const steps = 50;
     const interval = fadeDuration / steps;
-    const volumeStep = audio.volume / steps;
+    const startVol = audio.volume > 0 ? audio.volume : 1;
+    audio.volume = startVol;
+    const volumeStep = startVol / steps;
 
     fadeRef.current = setInterval(() => {
       if (audio.volume > volumeStep) {
@@ -121,16 +190,16 @@ export default function Player() {
     if (!audio) return;
 
     if (isPlaying) {
-      // Pause
       audio.pause();
       clearInterval(timerRef.current);
       clearInterval(fadeRef.current);
+      clearInterval(loopFadeRef.current);
+      loopFadingRef.current = false;
       setIsPlaying(false);
       setIsFading(false);
     } else {
-      // Resume/start
-      audio.volume = 1;
       audio.play().catch(console.error);
+      fadeInAudio(audio);
       setIsPlaying(true);
 
       timerRef.current = setInterval(() => {
@@ -144,10 +213,10 @@ export default function Player() {
         });
       }, 1000);
     }
-  }, [isPlaying, startFadeOut]);
+  }, [isPlaying, startFadeOut, fadeInAudio]);
 
   const handleDurationChange = (mins) => {
-    if (isPlaying) return; // don't allow change while playing
+    if (isPlaying) return;
     setSelectedDuration(mins);
   };
 
@@ -183,7 +252,6 @@ export default function Player() {
       </header>
 
       <div className="player__body">
-        {/* Icon with glow */}
         <div className="player__icon-wrap">
           <div className={`player__icon-glow${isPlaying ? ' player__icon-glow--active' : ''}`} />
           <div className="player__icon">
@@ -191,11 +259,9 @@ export default function Player() {
           </div>
         </div>
 
-        {/* Track info */}
         <h1 className="player__track-name">{track.name}</h1>
         <p className="player__track-hz">{track.hz}</p>
 
-        {/* Duration toggles */}
         <div className="player__duration-row">
           {[10, 30].map((mins) => (
             <button
@@ -209,12 +275,10 @@ export default function Player() {
           ))}
         </div>
 
-        {/* Timer */}
         <div className={`player__timer${showReadyState ? ' player__timer--dim' : ''}`}>
           {formatTime(timeLeft)}
         </div>
 
-        {/* Play/Pause */}
         <button
           className="player__play-btn"
           onClick={handlePlayPause}
@@ -223,7 +287,6 @@ export default function Player() {
           {isPlaying ? <PauseIcon /> : <PlayIcon />}
         </button>
 
-        {/* Status label */}
         <p className="player__status">
           {isFading ? 'fading out...' : isPlaying ? 'playing' : ''}
         </p>
