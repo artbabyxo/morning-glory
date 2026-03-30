@@ -11,7 +11,7 @@ const TRACKS = [
     name: 'Confidence & Belonging',
     hz: '396 Hz',
     icon: <StarIcon />,
-    status: 'locked',
+    status: 'live',
   },
   {
     id: 2,

@@ -1,9 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import DollarIcon from '../components/icons/DollarIcon';
+import StarIcon from '../components/icons/StarIcon';
 import '../styles/player.css';
 
 const TRACK_DATA = {
+  1: {
+    name: 'Confidence & Belonging',
+    hz: '396 Hz',
+    icon: <StarIcon />,
+    audioSrc: '/audio/track-1-confidence.mp3',
+  },
   3: {
     name: 'Abundance',
     hz: '432 Hz',
