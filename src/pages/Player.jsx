@@ -65,6 +65,32 @@ export default function Player() {
   const timerRef = useRef(null);
   const fadeRef = useRef(null);
   const loopFadeRef = useRef(null);
+  const wakeLockRef = useRef(null);
+
+  const requestWakeLock = useCallback(async () => {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request('screen');
+    } catch (_) {}
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release();
+      wakeLockRef.current = null;
+    }
+  }, []);
+
+  // Re-acquire wake lock if released when tab regains visibility
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && isPlayingRef.current) {
+        requestWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [requestWakeLock]);
 
   // Refs to avoid stale closures in audio event listeners
   const isPlayingRef = useRef(false);
@@ -164,7 +190,8 @@ export default function Player() {
     setIsPlaying(false);
     setIsFading(false);
     setTimeLeft(DURATIONS[selectedDuration]);
-  }, [selectedDuration]);
+    releaseWakeLock();
+  }, [selectedDuration, releaseWakeLock]);
 
   const startFadeOut = useCallback(() => {
     const audio = audioRef.current;
@@ -204,10 +231,12 @@ export default function Player() {
       loopFadingRef.current = false;
       setIsPlaying(false);
       setIsFading(false);
+      releaseWakeLock();
     } else {
       audio.play().catch(console.error);
       fadeInAudio(audio);
       setIsPlaying(true);
+      requestWakeLock();
 
       timerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
@@ -220,7 +249,7 @@ export default function Player() {
         });
       }, 1000);
     }
-  }, [isPlaying, startFadeOut, fadeInAudio]);
+  }, [isPlaying, startFadeOut, fadeInAudio, requestWakeLock, releaseWakeLock]);
 
   const handleDurationChange = (mins) => {
     if (isPlaying) return;
