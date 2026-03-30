@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import TrackCard from '../components/TrackCard';
 import StarIcon from '../components/icons/StarIcon';
 import RoseIcon from '../components/icons/RoseIcon';
@@ -37,6 +38,8 @@ const TRACKS = [
 ];
 
 export default function Tracks() {
+  const navigate = useNavigate();
+
   return (
     <div className="tracks">
       <header className="tracks__header">
@@ -48,6 +51,13 @@ export default function Tracks() {
         {TRACKS.map((track) => (
           <TrackCard key={track.id} track={track} />
         ))}
+      </div>
+
+      <div className="tracks__journey-wrap">
+        <button className="tracks__full-glory" onClick={() => navigate('/journey')}>
+          Full Glory
+        </button>
+        <p className="tracks__journey-sub">all tracks · 30 min · sequential</p>
       </div>
     </div>
   );
