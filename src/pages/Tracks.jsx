@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import TrackCard from '../components/TrackCard';
+import AlarmPill from '../components/AlarmPill';
 import StarIcon from '../components/icons/StarIcon';
 import RoseIcon from '../components/icons/RoseIcon';
 import DollarIcon from '../components/icons/DollarIcon';
@@ -58,6 +59,10 @@ export default function Tracks() {
           Full Glory
         </button>
         <p className="tracks__journey-sub">all tracks · 30 min · sequential</p>
+      </div>
+
+      <div className="tracks__alarm-wrap">
+        <AlarmPill />
       </div>
     </div>
   );

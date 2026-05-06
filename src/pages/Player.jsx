@@ -121,47 +121,11 @@ export default function Player() {
   // Init audio element
   useEffect(() => {
     const audio = new Audio(track.audioSrc);
-    audio.loop = false;
+    audio.loop = true; // OS-level loop — works when screen is locked, JS suspended
     audio.preload = 'auto';
-
-    const handleTimeUpdate = () => {
-      if (!isPlayingRef.current || isFadingRef.current || loopFadingRef.current) return;
-      if (!audio.duration) return;
-      const timeToEnd = audio.duration - audio.currentTime;
-      if (timeToEnd <= LOOP_FADE_SECS && timeToEnd > 0) {
-        loopFadingRef.current = true;
-        clearInterval(loopFadeRef.current);
-        const steps = 20;
-        const interval = (timeToEnd * 1000) / steps;
-        const startVol = audio.volume;
-        const step = startVol / steps;
-        loopFadeRef.current = setInterval(() => {
-          if (audio.volume > step) {
-            audio.volume = Math.max(0, audio.volume - step);
-          } else {
-            audio.volume = 0;
-            clearInterval(loopFadeRef.current);
-          }
-        }, interval);
-      }
-    };
-
-    const handleEnded = () => {
-      if (isFadingRef.current) return; // session ending, don't restart
-      clearInterval(loopFadeRef.current);
-      loopFadingRef.current = false;
-      audio.currentTime = 0;
-      audio.play().catch(console.error);
-      fadeInAudio(audio);
-    };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('ended', handleEnded);
     audioRef.current = audio;
 
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('ended', handleEnded);
       audio.pause();
       audio.src = '';
       clearInterval(timerRef.current);

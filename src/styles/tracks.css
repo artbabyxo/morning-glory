@@ -206,3 +206,197 @@
   border-radius: 4px;
   padding: 2px 6px;
 }
+
+/* ─── Alarm pill ─────────────────────────────────────────── */
+
+.tracks__alarm-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0 1rem 2rem;
+}
+
+.alarm-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 50px;
+  padding: 0.45rem 1.25rem;
+  cursor: pointer;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.alarm-pill--active {
+  color: var(--accent);
+  border-color: rgba(196, 168, 130, 0.25) !important;
+  background: rgba(196, 168, 130, 0.05);
+}
+
+.alarm-pill:hover {
+  border-color: rgba(196, 168, 130, 0.3) !important;
+  background: rgba(196, 168, 130, 0.08);
+  color: var(--text-primary);
+}
+
+.alarm-pill__icon {
+  display: flex;
+  align-items: center;
+}
+
+.alarm-pill__icon svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.alarm-pill--active .alarm-pill__icon svg {
+  stroke: var(--accent);
+}
+
+/* ─── Alarm modal ────────────────────────────────────────── */
+
+.alarm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(8, 13, 26, 0.82);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: alarmOverlayIn 0.2s ease-out forwards;
+}
+
+@keyframes alarmOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.alarm-modal {
+  background: #0f1629;
+  border: 1px solid rgba(196, 168, 130, 0.12);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 480px;
+  padding: 2rem 1.75rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: alarmModalIn 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes alarmModalIn {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.alarm-modal__title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1.35rem;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.alarm-modal__sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-top: -0.5rem;
+}
+
+.alarm-modal__timepicker {
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(196, 168, 130, 0.2);
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  outline: none;
+  margin: 0.25rem 0;
+  color-scheme: dark;
+}
+
+.alarm-modal__timepicker:focus {
+  border-color: rgba(196, 168, 130, 0.45);
+  box-shadow: 0 0 20px rgba(196, 168, 130, 0.08);
+}
+
+.alarm-modal__confirm {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 1rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--accent);
+  border-radius: 50px;
+  padding: 0.75rem 2.5rem;
+  width: 100%;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  margin-top: 0.25rem;
+}
+
+.alarm-modal__confirm:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.alarm-modal__confirm:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.alarm-modal__cancel-alarm {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8a4040;
+  background: rgba(138, 64, 64, 0.08);
+  border: 1px solid rgba(138, 64, 64, 0.2) !important;
+  border-radius: 50px;
+  padding: 0.55rem 1.5rem;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+}
+
+.alarm-modal__cancel-alarm:hover {
+  background: rgba(138, 64, 64, 0.16);
+  border-color: rgba(138, 64, 64, 0.4) !important;
+}
+
+.alarm-modal__dismiss {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 0.25rem;
+  transition: opacity 0.2s ease;
+}
+
+.alarm-modal__dismiss:hover {
+  opacity: 0.9;
+}
