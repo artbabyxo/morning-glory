@@ -46,6 +46,7 @@ export default function Tracks() {
       <header className="tracks__header">
         <h1 className="tracks__title">Morning Glory</h1>
         <p className="tracks__subtitle">subliminal reprogramming while you sleep</p>
+        <p className="tracks__subtitle tracks__subtitle--secondary">solfeggio frequencies for nervous system regulation + deeper subconscious integration</p>
       </header>
 
       <div className="tracks__grid">
@@ -63,6 +64,7 @@ export default function Tracks() {
 
       <div className="tracks__alarm-wrap">
         <AlarmPill />
+        <p className="tracks__alarm-note">requires ringer on · for do not disturb, go to settings &gt; focus &gt; allow morning glory</p>
       </div>
     </div>
   );
