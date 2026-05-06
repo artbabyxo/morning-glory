@@ -22,9 +22,9 @@ export default function AlarmPill() {
     const result = await setAlarm(pickerValue);
     if (result && !result.ok && result.reason === 'permission-denied') {
       setPermError(true);
-      return;
+    } else {
+      setPermError(false);
     }
-    setPermError(false);
     closeModal();
   }
 
@@ -59,7 +59,7 @@ export default function AlarmPill() {
 
       {/* Modal overlay */}
       {modalOpen && (
-        <div className="alarm-modal-overlay" onClick={closeModal}>
+        <div className="alarm-modal-overlay" onClick={handleConfirm}>
           <div
             className="alarm-modal"
             onClick={(e) => e.stopPropagation()}

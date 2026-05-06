@@ -104,10 +104,9 @@ export function useAlarm() {
 
   const setAlarm = useCallback(async (timeString) => {
     const alarmDate = nextOccurrence(timeString);
-    const result = await scheduleAlarm(alarmDate);
-    if (!result.ok) return result;
     localStorage.setItem(STORAGE_KEY, timeString);
     setAlarmTime(timeString);
+    const result = await scheduleAlarm(alarmDate);
     return result;
   }, []);
 
