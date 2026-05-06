@@ -26,8 +26,8 @@ export async function checkNotificationPermissions() {
   }
 }
 
-const ALARM_IDS = [1, 2, 3, 4, 5];
-const SNOOZE_INTERVAL_MS = 9 * 60 * 1000;
+const ALARM_IDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const SNOOZE_INTERVAL_MS = 30 * 1000; // every 30 sec, 10 times = 5 min
 
 export async function scheduleAlarm(alarmDate) {
   if (!isNative) return { ok: false, reason: 'not-available' };
