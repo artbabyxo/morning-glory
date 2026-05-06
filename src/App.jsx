@@ -4,6 +4,8 @@ import Onboard from './pages/Onboard';
 import Tracks from './pages/Tracks';
 import Player from './pages/Player';
 import FullGlory from './pages/FullGlory';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { requestNotificationPermissions, cancelAlarm } from './hooks/useAlarm';
 
 export default function App() {
@@ -11,19 +13,12 @@ export default function App() {
     let listenerHandle = null;
 
     async function init() {
+      if (!Capacitor.isNativePlatform()) return;
       await requestNotificationPermissions();
-
-      try {
-        const { LocalNotifications } = await import('@capacitor/local-notifications');
-        listenerHandle = await LocalNotifications.addListener(
-          'localNotificationActionPerformed',
-          () => {
-            cancelAlarm();
-          }
-        );
-      } catch {
-        // Not in a Capacitor context — no-op
-      }
+      listenerHandle = await LocalNotifications.addListener(
+        'localNotificationActionPerformed',
+        () => { cancelAlarm(); }
+      );
     }
 
     init();

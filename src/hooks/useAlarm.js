@@ -1,34 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 const STORAGE_KEY = 'mg_alarm_time';
-
-// Only import LocalNotifications in a Capacitor (native) context.
-// On web, the Capacitor bridge is absent, so we gracefully no-op.
-async function getLocalNotifications() {
-  try {
-    const { LocalNotifications } = await import('@capacitor/local-notifications');
-    return LocalNotifications;
-  } catch {
-    return null;
-  }
-}
+const isNative = Capacitor.isNativePlatform();
 
 export async function requestNotificationPermissions() {
-  const LN = await getLocalNotifications();
-  if (!LN) return false;
+  if (!isNative) return false;
   try {
-    const result = await LN.requestPermissions();
+    const result = await LocalNotifications.requestPermissions();
     return result.display === 'granted';
-  } catch {
+  } catch (err) {
+    console.warn('[MG] requestPermissions failed:', err);
     return false;
   }
 }
 
 export async function checkNotificationPermissions() {
-  const LN = await getLocalNotifications();
-  if (!LN) return false;
+  if (!isNative) return false;
   try {
-    const result = await LN.checkPermissions();
+    const result = await LocalNotifications.checkPermissions();
     return result.display === 'granted';
   } catch {
     return false;
@@ -39,15 +30,14 @@ const ALARM_IDS = [1, 2, 3, 4, 5];
 const SNOOZE_INTERVAL_MS = 9 * 60 * 1000;
 
 export async function scheduleAlarm(alarmDate) {
-  const LN = await getLocalNotifications();
-  if (!LN) return { ok: false, reason: 'not-available' };
+  if (!isNative) return { ok: false, reason: 'not-available' };
   try {
-    const { display } = await LN.checkPermissions();
+    const { display } = await LocalNotifications.checkPermissions();
     if (display !== 'granted') {
       return { ok: false, reason: 'permission-denied' };
     }
-    await LN.cancel({ notifications: ALARM_IDS.map(id => ({ id })) });
-    await LN.schedule({
+    await LocalNotifications.cancel({ notifications: ALARM_IDS.map(id => ({ id })) });
+    await LocalNotifications.schedule({
       notifications: ALARM_IDS.map((id, i) => ({
         id,
         title: 'Good morning.',
@@ -60,23 +50,20 @@ export async function scheduleAlarm(alarmDate) {
     });
     return { ok: true };
   } catch (err) {
-    console.warn('[Morning Glory] Could not schedule alarm:', err);
+    console.warn('[MG] Could not schedule alarm:', err);
     return { ok: false, reason: err?.message };
   }
 }
 
 export async function cancelAlarm() {
-  const LN = await getLocalNotifications();
-  if (!LN) return;
+  if (!isNative) return;
   try {
-    await LN.cancel({ notifications: ALARM_IDS.map(id => ({ id })) });
+    await LocalNotifications.cancel({ notifications: ALARM_IDS.map(id => ({ id })) });
   } catch {
     // no-op
   }
 }
 
-// Returns the next occurrence of a given HH:MM time as a Date object.
-// If that time has already passed today, returns tomorrow's occurrence.
 function nextOccurrence(timeString) {
   const [hours, minutes] = timeString.split(':').map(Number);
   const now = new Date();
@@ -89,24 +76,18 @@ function nextOccurrence(timeString) {
 }
 
 export function useAlarm() {
-  // alarmTime stored as "HH:MM" string (24-hour), or null
-  const [alarmTime, setAlarmTime] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY) || null;
-  });
+  const [alarmTime, setAlarmTime] = useState(() => localStorage.getItem(STORAGE_KEY) || null);
 
-  // On mount: if there's a saved alarm, reschedule it (handles app restarts)
   useEffect(() => {
     if (alarmTime) {
-      const alarmDate = nextOccurrence(alarmTime);
-      scheduleAlarm(alarmDate);
+      scheduleAlarm(nextOccurrence(alarmTime));
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setAlarm = useCallback(async (timeString) => {
-    const alarmDate = nextOccurrence(timeString);
     localStorage.setItem(STORAGE_KEY, timeString);
     setAlarmTime(timeString);
-    const result = await scheduleAlarm(alarmDate);
+    const result = await scheduleAlarm(nextOccurrence(timeString));
     return result;
   }, []);
 
@@ -116,7 +97,6 @@ export function useAlarm() {
     await cancelAlarm();
   }, []);
 
-  // Formatted display string, e.g. "7:00 AM"
   const displayTime = alarmTime
     ? (() => {
         const [h, m] = alarmTime.split(':').map(Number);
